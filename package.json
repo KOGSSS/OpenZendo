@@ -1,0 +1,16 @@
+{
+  "name": "oz-website",
+  "version": "1.0.0",
+  "description": "A virtual zendo for online meditation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "lowdb": "^7.0.1",
+    "socket.io": "^4.7.5"
+  },
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Zendo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+    }
+    .log {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Virtual Zendo</h1>
+  <button id="startBtn">Start Meditation</button>
+  <button id="stopBtn" style="display: none;">End Meditation</button>
+  <div id="timer">Meditation Time: 0 minutes</div>
+  <div class="log" id="log"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const timerDiv = document.getElementById('timer');
+    const logDiv = document.getElementById('log');
+    
+    let isMeditating = false;
+    let time = 0;
+    let timer;
+
+    startBtn.addEventListener('click', () => {
+      isMeditating = true;
+      startBtn.style.display = 'none';
+      stopBtn.style.display = 'inline';
+      timer = setInterval(() => {
+        time += 1;
+        timerDiv.textContent = `Meditation Time: ${time} minutes`;
+      }, 60000); // 60000 ms = 1 minute
+      socket.emit('enter', { time: new Date().toISOString() });
+      playBellSound();
+    });
+
+    stopBtn.addEventListener('click', () => {
+      isMeditating = false;
+      clearInterval(timer);
+      startBtn.style.display = 'inline';
+      stopBtn.style.display = 'none';
+      socket.emit('exit', { time: new Date().toISOString(), duration: time });
+      playBellSound();
+      time = 0;
+      timerDiv.textContent = 'Meditation Time: 0 minutes';
+    });
+
+    const playBellSound = () => {
+      const audio = new Audio('/bell.mp3');
+      audio.play();
+    };
+
+    socket.on('user-entered', (data) => {
+      const entry = document.createElement('div');
+      entry.textContent = `User entered at ${data.time}`;
+      logDiv.appendChild(entry);
+    });
+
+    socket.on('user-exited', (data) => {
+      const exit = document.createElement('div');
+      exit.textContent = `User exited at ${data.time}, duration: ${data.duration} minutes`;
+      logDiv.appendChild(exit);
+    });
+  </script>
+</body>
+</html>
